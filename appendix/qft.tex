@@ -183,3 +183,80 @@ def get_noise(p_measure_error, p_gate_error):
 
     return noise_model
 \end{python}
+
+\subsection{Testing circuit on a simulator with noise}
+\label{subsec:testing-circuit-simulator-noise}
+
+\begin{python}
+job = execute(qc, backend=qasm_simulator, shots=1024, noise_model=get_noise(0.05, 0.05))
+
+result = job.result()
+counts = result.get_counts()
+
+fig, axes = plt.subplots(1, figsize=(7,4))
+
+plot_histogram(counts, ax = axes)
+
+fig.savefig('out/test-histogram-with-noise.pdf', transparent=True)
+\end{python}
+
+\subsection{Testing circuit with generated noise model}
+\label{subsec:testing-circuit-generated-noise-model}
+
+\begin{python}
+# Get backend
+IBMQ.load_account()
+
+# Get least busy quantum computer
+provider = IBMQ.get_provider(hub='ibm-q')
+real_backend = least_busy(
+    provider.backends(
+        filters = lambda b: b.configuration().n_qubits >= qc.num_qubits
+            and not b.configuration().simulator and b.status().operational==True
+    )
+)
+
+print(real_backend.name())
+
+noise_model = NoiseModel.from_backend(real_backend)
+
+job = execute(qc, backend=qasm_simulator, shots=1024, noise_model=noise_model)
+
+result = job.result()
+counts = result.get_counts()
+
+fig, axes = plt.subplots(1, figsize=(7,4))
+
+plot_histogram(counts, ax = axes)
+
+fig.savefig('out/test-histogram-generated-noise-model.pdf', transparent=True)
+\end{python}
+
+\subsection{Testing circuit on a real quantum device}
+\label{subsec:testing-circuit-real-device}
+
+\begin{python}
+IBMQ.load_account()
+
+# Get least busy quantum computer
+provider = IBMQ.get_provider(hub='ibm-q')
+real_backend = least_busy(
+    provider.backends(
+        filters = lambda b: b.configuration().n_qubits >= qc.num_qubits
+            and not b.configuration().simulator and b.status().operational==True
+    )
+)
+
+print(real_backend.name())
+
+job = execute(qc, backend=real_backend, shots=1024)
+
+result = job.result()
+counts = result.get_counts()
+
+fig, axes = plt.subplots(1, figsize=(7,4))
+
+plot_histogram(counts, ax = axes)
+
+fig.savefig('out/test-histogram-real-quantum-device.pdf', transparent=True)
+\end{python}

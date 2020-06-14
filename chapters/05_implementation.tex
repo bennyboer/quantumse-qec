@@ -73,8 +73,48 @@ It anticipated two parameters:
 \end{enumerate}
 
 Another way of creating a noise model is by automatically generating one from the properties of a real quantum device using the \texttt{NoiseModel.from\_backend()} method~\cite{QiskitDocsNoise}.
+In the first test we'll settle with manually specifying the probabilities to both \(5 \%\).
+Later a noise model is generated from a real quantum backend followed by executing the circuit on the real device.
+
+The code for generating the simulated results as shown in the histogram in figure~\ref{fig:test-histogram-with-noise} is listed in appendix~\ref{subsec:testing-circuit-simulator-noise}.
+It is evident that there is indeed noise as we do no more measure the correct result \texttt{110} with \(100 \%\) probability.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{res/test-histogram-with-noise.pdf}
+    \caption{Simulator result \textbf{with} noise for the full proposed QFT circuit with 3 qubits}
+    \label{fig:test-histogram-with-noise}
+\end{figure}
+
+Now we try generating a noise model from a real quantum backend.
+The code to do that is as always placed in the appendix~\ref{subsec:testing-circuit-generated-noise-model}.
+It is choosing the least busy quantum device.
+In the case of the resulting figure~\ref{fig:test-histogram-generated-noise-model} it has chosen a backend called \texttt{ibmqx2}.
+If we compare it with the previous histogram, we find that it has produced a noise model that is not as noisy as the \(5 \%\) gate and measurement errors we selected earlier.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{res/test-histogram-generated-noise-model.pdf}
+    \caption{Real quantum device result for the full proposed QFT circuit with 3 qubits}
+    \label{fig:test-histogram-generated-noise-model}
+\end{figure}
+
+The resulting histogram for the test with a real quantum device, which can be generated using the code from appendix~\ref{subsec:testing-circuit-real-device}, is depicted in figure~\ref{fig:test-histogram-real-device}.
+Another result the code is outputting is the quantum backend name on which the circuit has been executed.
+In this case the name is \texttt{ibmqx2}.
+That happens to be the same that Qiskit has generated a noise model for.
+Comparing it to the actual results we see a huge difference as the actual noise seems to be greater.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{res/test-histogram-real-quantum-device.pdf}
+    \caption{Real quantum device result for the full proposed QFT circuit with 3 qubits}
+    \label{fig:test-histogram-real-device}
+\end{figure}
 
 \subsection{QFT circuit changes for error-correction}
 \label{subsec:qft-circuit-error-correction}
+
+
 
 \paragraph{Testing}
