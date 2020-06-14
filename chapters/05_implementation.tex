@@ -125,6 +125,15 @@ This is done to have the code reusable, small and still comprehensible.
 
 Additionally those functions are used in another function \texttt{prepare\_rc\_qec\_qft\_circuit} which can be seen in appendix~\ref{subsec:circuit-building-code}.
 It is building the whole circuit for a specified input number and repetition count.
+An example for 2 input qubits and 3 repetitions is displayed in figure~\ref{fig:example-error-correction-circuit} but it really can be any size.
+As one can see we need 4 ancillary qubits for correcting bit flips at the end.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{res/example-error-correction-circuit.pdf}
+    \caption{Error corrected QFT circuit with 2 qubits input and 3 repetitions}
+    \label{fig:example-error-correction-circuit}
+\end{figure}
 
 The last code snipped can be looked up in appendix~\ref{subsec:appendix-decoding-result-circuit} and is decoding a resulting bit string from the circuit.
 That means correcting the error when the ancillary bits indicate one.
