@@ -115,3 +115,34 @@ def decode_num(n):
 
     return qc
 \end{python}
+
+\subsection{Code to generate the full QFT circuit used in the paper}
+\label{subsec:generating-full-qft-circuit}
+
+\begin{python}
+num_to_encode = 6
+
+# Encode number to send through circuit
+enc_qc = encode_num(num_to_encode)
+enc_qc.barrier()
+
+n = enc_qc.num_qubits
+
+# Create QFT circuit
+qft_qc = qft(n)
+
+# Create inverse QFT
+inv_qft_qc = inverse_qft(n)
+
+# Decode number sent through circuit
+dec_qc = decode_num(n)
+
+
+qc = (enc_qc + qft_qc + inv_qft_qc + dec_qc)
+
+fig, axes = plt.subplots(1)
+
+qc.draw('mpl', ax = axes)
+
+fig.savefig('out/full-qft-3-qubit-circuit.pdf', transparent=True)
+\end{python}
