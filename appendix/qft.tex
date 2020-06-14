@@ -12,6 +12,8 @@ from qiskit import execute, Aer
 from qiskit import IBMQ
 from qiskit.visualization import plot_histogram
 from qiskit.providers.ibmq import least_busy
+from qiskit.providers.aer.noise import NoiseModel
+from qiskit.providers.aer.noise.errors import pauli_error, depolarizing_error
 
 # Plotting library
 import matplotlib.pyplot as plt
@@ -145,4 +147,39 @@ fig, axes = plt.subplots(1)
 qc.draw('mpl', ax = axes)
 
 fig.savefig('out/full-qft-3-qubit-circuit.pdf', transparent=True)
+\end{python}
+
+\subsection{Testing circuit on a simulator without noise}
+\label{subsec:testing-circuit-simulator-no-noise}
+
+\begin{python}
+qasm_simulator = Aer.get_backend('qasm_simulator')
+
+job = execute(qc, backend=qasm_simulator, shots=1024)
+
+result = job.result()
+counts = result.get_counts()
+
+fig, axes = plt.subplots(1)
+
+plot_histogram(counts, ax = axes)
+
+fig.savefig('out/test-histogram.pdf', transparent=True)
+\end{python}
+
+\subsection{Noise model function}
+\label{subsec:noise-model-function}
+
+\begin{python}
+def get_noise(p_measure_error, p_gate_error):
+    error_measure = pauli_error([('X', p_measure_error), ('I', 1 - p_measure_error)])
+    error_gate1 = depolarizing_error(p_gate_error, 1)
+    error_gate2 = error_gate1.tensor(error_gate1)
+
+    noise_model = NoiseModel()
+    noise_model.add_all_qubit_quantum_error(error_measure, "measure") # measurement error is applied to measurements
+    noise_model.add_all_qubit_quantum_error(error_gate1, ["x"]) # single qubit gate error is applied to x gates
+    noise_model.add_all_qubit_quantum_error(error_gate2, ["cx"]) # two qubit gate error is applied to cx gates
+
+    return noise_model
 \end{python}

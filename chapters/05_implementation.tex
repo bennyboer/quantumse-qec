@@ -35,11 +35,11 @@ It is applied in the function displayed in appendix~\ref{subsec:inverse-qft-func
 
 The last step to have a fully functional circuit, is to encode a number to the qubits that serve as the input.
 A method in appendix~\ref{subsec:encoding-decoding-number-in-circuit} is written that encodes a number to a binary string and later to another quantum circuit that is scaled to fit the amount of needed bits to represent the passed number.
-For example the decimal integer number 12 is encoded to the binary string 1100 and therefore needs the circuit to have 4 input qubits.
+For example the decimal integer number 12 is encoded to the binary string \texttt{1100} and therefore needs the circuit to have 4 input qubits.
 Additionally, the same code in the appendix shows a function to measure the qubits to classical bits at the end of the circuit to get the circuits result as binary string again.
 That result should ideally match the input when no error occurs.
 
-The full circuit for the encoded number \(6\) is shown in figure~\ref{fig:full-qft-3-qubit-circuit}.
+The full circuit for the encoded number \(6\) (\texttt{110}) is shown in figure~\ref{fig:full-qft-3-qubit-circuit}.
 
 \begin{figure}[H]
     \centering
@@ -52,7 +52,27 @@ For the sake of completeness, the source code for generating the above image is 
 
 \paragraph{Testing}
 
-Testing the results of the quantum Fourier transform on a simulator and a real backend.
+Now that we have the circuit we should be able to test it using the Qiskit simulator and a real quantum device.
+The simulator testing is done using the code from~\ref{subsec:testing-circuit-simulator-no-noise} from which figure~\ref{fig:test-histogram} is created.
+The histogram is showing \(1024\) simulated results from the circuit.
+Since we have not configured the simulator to simulate noise the result is the same (\texttt{110}) for all shots as expected.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{res/test-histogram.pdf}
+    \caption{Simulator result without noise for the full proposed QFT circuit with 3 qubits}
+    \label{fig:test-histogram}
+\end{figure}
+
+We are able to simulate noise using the \texttt{noise\_model} parameter of Qiskits \texttt{execute} function.
+\citeA{QiskitErrorCorrection} showed a function to create a noise model from which we derived the one listed in appendix~\ref{subsec:noise-model-function}.
+It anticipated two parameters:
+\begin{enumerate}
+    \item The probability \(p_{error_{measurement}}\) that the measurement leads to a bit-flip
+    \item The probability \(p_{error_{gate}}\) to replace the state of a qubit with a random state
+\end{enumerate}
+
+Another way of creating a noise model is by automatically generating one from the properties of a real quantum device using the \texttt{NoiseModel.from\_backend()} method~\cite{QiskitDocsNoise}.
 
 \subsection{QFT circuit changes for error-correction}
 \label{subsec:qft-circuit-error-correction}
