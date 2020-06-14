@@ -1,0 +1,11 @@
+/literature
+/out
+/.idea
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+/*.pdf
+*.gz
+*.toc

@@ -1,0 +1,32 @@
+\section{Methods and tools}
+\label{sec:methods-and-tools}
+
+As a reminder, we will try to correct bit-flip errors of a quantum Fourier transform circuit.
+Therefore, some tools and methods are selected and presented in this section.
+
+\subsection{Qiskit}
+\label{subsec:qiskit}
+
+Since we are already familiar with the quantum computing software development framework \texttt{Qiskit}, it is an obvious choice.
+Its tight coupling with IBM Quantum Experience and thus accessible quantum devices allow testing quantum circuits in a real environment~\cite{IBMQAccount}.
+Besides that the framework offers a simulator capable of testing the created code as well as adding a noise model to imitate real quantum computer behavior, which we want to fight using our quantum error correction solution~\cite{QiskitNoiseModel}.
+
+\subsection{Python}
+\label{subsec:python}
+
+Qiskit is a library for the programming language Python.
+Thus we have to use it.
+Additionally, Pythons popularity soared in the last years especially in scientific areas, making it one of the most popular programming languages~\cite{StackOverFlowDevSurveyTechnolgies}.
+Thus, most people reading this paper should easily be capable of understanding the included code snippets, improving accessibility.
+
+The precise version of the language is \texttt{Python 3.8.2} which is used throughout this paper.
+There is no other reason for choosing that exact version other than \texttt{Qiskit} is supporting it and it is an up-to-date version of the language at the time of writing.
+
+\subsection{JupyterLab}
+\label{subsec:jupyter-lab}
+
+\texttt{JupyterLab} is a web-based user interface for Project Jupyter~\cite{JupyterLabDocs}.
+It is an open-source project to support interactive data science and scientific computing~\cite{ProjectJupyter}
+One of its components called \emph{Jupyter Notebooks} will be used to quickly write and test Python code with additional support for LaTeX and Markdown to document that code more clearly~\cite{JupyterLabOverview}.
+
+In addition, the code is also included in the annex to this document in order to ease the reproduction of the work of this paper.

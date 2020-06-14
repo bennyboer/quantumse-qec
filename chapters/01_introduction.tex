@@ -1,0 +1,38 @@
+\section{Introduction}
+\label{sec:introduction}
+
+While quantum computing is still at an early stage, many quantum algorithms seem to provide drastic accelerations compared to their current classical counterparts.
+One of the best known of these is Shor's algorithm which is almost exponentially faster than the currently most efficient factoring algorithms and thus poses a threat to cryptosystems that rely on the factoring problem being hard to solve~\cite{Shor}.
+
+However building a quantum computer and making use of it is not an easy task.
+It is essential for such a quantum system to be isolated from unknown interactions with the external world which may mess up the internal state and thus the received results~\cite[p. 34]{Milburn}.
+Simultaneously those systems need to be manipulable to an extent in order to be able to implement quantum gates or encoding starting states for the individual qubits~\cite{Matuschak2019}.
+
+Qubits on their own, as well as in an entangled state are error prone in the presence of \emph{noise} and \emph{decoherence}~\cite[p. 34]{Milburn}.
+Both appear even with current quantum systems.
+To protect fragile quantum information and build fault-tolerant quantum computers, we use quantum error correction (\emph{QEC})~\cite[p. 46998]{Li}.
+QEC is achieved by using special codes to encode quantum information~\cite[p. 113]{deBrito}.
+Most codes are based on redundancy, which means the introduction of multiple qubits, instead of just one, that carry the information~\cite[p. 113]{deBrito}.
+
+\subsection{Background}
+\label{subsec:background}
+
+This examination paper was written in the context of the lecture \emph{Quantum Software Development}, which was held by \emph{Prof. Dr. Sabine Tornow} in the summer semester of 2020 at the \emph{Munich University of Applied Sciences}.
+
+\subsection{Description}
+
+\citeA[p. 46998]{Li} mentions that quantum error correction is already achievable on platforms such as \emph{IBM Q Experience}~\cite{IBMQExperience}.
+Using that platform this paper describes an attempt to error correct bit-flips in a quantum circuit performing a quantum Fourier transform on a real quantum device.
+Before testing on the actual computer provided by the Cloud service, the needed circuit has to be modelled and tested using a Simulator.
+IBM provides a library \texttt{Qiskit} which is usable with the programming language \texttt{Python} and offers the needed Simulator as well as an interface to use the IBM Q Experience platform~\cite{Qiskit}.
+
+\subsection{Structure}
+\label{subsec:structure}
+
+To give an overview over the structure of the paper, the following sections are quickly described.
+
+The paper starts with a quick recapitulation about the \textbf{basic concepts}, namely \emph{quantum error correction}, \emph{quantum Fourier transform} and \textbf{related work}.
+Afterwards the \textbf{used methods and tools} are introduced with which the quantum circuit is modelled and tested, followed by the actual \textbf{implementation}.
+The resulting circuit is then tested and results from the simulator as well as the real quantum computer \textbf{analyzed}.
+
+A \textbf{conclusion} about the resulting paper is drawn at the end with some \emph{proposals for further studies}.
