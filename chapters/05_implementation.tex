@@ -115,6 +115,18 @@ Comparing it to the actual results we see a huge difference as the actual noise 
 \subsection{QFT circuit changes for error-correction}
 \label{subsec:qft-circuit-error-correction}
 
+We now are applying some changes in order to correct bit-flip errors in the circuit.
+A good result would be a better looking histogram than the ones listed above.
 
+To keep the circuit relatively small we will stick with the 3-qubit QFT circuit and repeat it 3 times.
+That means we have to stack the previously shown circuit vertically and add some ancillary qubits.
+The functions in appendix~\ref{subsec:modified-qft-circuit-functions} are rewritten versions of the previously shown ones that allow passing a parameter specifying a quantum circuit object to apply the gates on as well a vertical \texttt{offset} to apply them in the passed circuit.
+This is done to have the code reusable, small and still comprehensible.
+
+Additionally those functions are used in another function \texttt{prepare\_rc\_qec\_qft\_circuit} which can be seen in appendix~\ref{subsec:circuit-building-code}.
+It is building the whole circuit for a specified input number and repetition count.
+
+The last code snipped can be looked up in appendix~\ref{subsec:appendix-decoding-result-circuit} and is decoding a resulting bit string from the circuit.
+That means correcting the error when the ancillary bits indicate one.
 
 \paragraph{Testing}

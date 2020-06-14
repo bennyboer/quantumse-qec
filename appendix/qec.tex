@@ -1,0 +1,334 @@
+\section{Error corrected circuit source code}
+\label{sec:error-corrected-circuit-appendix}
+
+\subsection{Modified QFT circuit functions}
+\label{subsec:modified-qft-circuit-functions}
+
+\begin{python}
+def to_bit_representation(num):
+    """
+    Convert the passed decimal integer number to a bit representation.
+    For example 6 will be transformed to a list: [1, 1, 0].
+
+    Parameters:
+    [num]: A decimal integer number to encode to a bit representation
+
+    Returns:
+    The passed decimal integer number as a bit list
+    """
+
+    remainders = []
+    while num > 0:
+        remainder = num % 2
+        num = num // 2
+
+        remainders.append(remainder)
+
+    return remainders
+
+
+def encode_bits(bits, qc, offset=0):
+    """
+    Encode the passed decimal integer number given as bits list in the passed quantum circuit.
+
+    Parameters:
+    [bits]: Bit list (e. g. [1, 1, 0] for the decimal number 6) to encode
+    [qc]: Quantum Circuit to encode the bits in
+    [offset]: The offset to apply in the passed circuit
+    """
+
+    bit_count = len(bits)
+
+    # Encode number in circuit
+    for i in range(bit_count):
+    if bits[i] == 1:
+    qc.x(offset + i)
+
+
+    def qft(size, circuit, offset=0):
+    """
+    Add quantum Fourier transform gates for the passed [circuit] at the passed [offset]
+    with the given [size].
+
+    Parameters:
+    [size]: How many qubits the QFT should be able to deal with
+    [circuit]: Quantum circuit to apply QFT gates to
+    [offset]: The offset to apply the gates in the passed circuit to
+    """
+
+    # Create core QFT circuit
+    for i in range(size - 1, -1, -1):
+        # Apply Hadamard gate on the i'th qubit (most significant qubit)
+        circuit.h(offset + i)
+
+    # Apply controlled rotation around the Z-axis (CU1-Gate)
+    for j in range(i):
+        angle = np.pi / 2 ** (i - j)
+
+        circuit.cu1(theta=angle, control_qubit=offset + j, target_qubit=offset + i)
+
+    # Add ending swaps
+    for i in range(size // 2):
+        circuit.swap(offset + i, offset + size - 1 - i)
+
+
+def inverse_qft(size, circuit, offset=0):
+    """
+    Add the inverse quantum Fourier transform gates for the passed [circuit]
+    at the given [offset] with the specified [size].
+
+    Parameters:
+    [size]: How many qubits the inverse QFT should be able to deal with
+    [circuit]: Quantum circuit to apply inverse QFT gates to
+    [offset]: The offset to apply the gates in the passed circuit to
+    """
+
+    # Add starting swaps
+    for i in range(size // 2):
+        circuit.swap(offset + i, offset + size - 1 - i)
+
+    # Create core QFT circuit
+    for i in range(size):
+        # Apply controlled rotation around the Z-axis (CU1-Gate)
+        for j in range(i - 1, -1, -1):
+            angle = - np.pi / 2 ** (i - j)
+
+            circuit.cu1(theta=angle, control_qubit=offset + j, target_qubit=offset + i)
+
+    # Apply Hadamard gate on the i'th qubit (most significant qubit)
+    circuit.h(offset + i)
+\end{python}
+
+\subsection{Circuit building code}
+\label{subsec:circuit-building-code}
+
+\begin{python}
+def prepare_circuit(qubits_per_circuit, repetitions=1):
+    """
+    Prepare the quantum circuit needed for QFT with repetition code QEC.
+
+    Parameters:
+    [qubits_per_circuit]: Number of qubits per repetition
+    [repetitions]: Number of repetitions to make for QEC
+
+    Returns:
+    - The prepared quantum circuit
+    - A list of quantum registers
+    - A list of ancilla quantum registers
+    - A list of classical registers
+    - A list of ancilla classical registers
+    """
+
+    # Add QFT registers for each repetition
+    qrs = [] # Quantum registers
+    crs = [] # Classical registers
+
+    for r in range(repetitions):
+        label = chr(ord('a') + r)
+
+        qr = QuantumRegister(qubits_per_circuit, label)
+        cr = ClassicalRegister(qubits_per_circuit, f'{label}_{{classical}}')
+
+        qrs.append(qr)
+        crs.append(cr)
+
+
+    # Add ancilla registers for each repetition
+    qars = [] # Quantum ancilla registers
+    cars = [] # Classical ancilla registers
+
+    ancilla_qubit_count_per_qubit = (repetitions - 1)
+
+    for q in range(qubits_per_circuit):
+        qr = QuantumRegister(ancilla_qubit_count_per_qubit, f'q{q}_{{ancilla}}')
+        cr = ClassicalRegister(ancilla_qubit_count_per_qubit, f'q{q}_{{classical}}')
+
+        qars.append(qr)
+        cars.append(cr)
+
+    return QuantumCircuit(*qrs, *crs, *qars, *cars), qrs, crs, qars, cars
+
+
+def prepare_rc_qec_qft_circuit(num_to_encode, repetitions=1, with_barriers=True):
+    """
+    Prepare the full QEC QFT circuit.
+
+    Parameters:
+    [num_to_encode]: Decimal integer number to encode in the circuit
+    [repetitions]: Number of repetitions for the repetition QEC
+    """
+
+    # Step 1: Encode the decimal integer number to a bit list
+    enc_num_bits = to_bit_representation(NUM_TO_ENCODE)
+
+    # Step 2: Prepare the quantum circuit including ancilla qubits
+    qc, qrs, crs, qars, cars = prepare_circuit(len(enc_num_bits), repetitions=repetitions)
+
+    # Step 3: Encode the bits in the quantum circuit
+    for r in range(repetitions):
+        encode_bits(enc_num_bits, qc, offset=r * len(enc_num_bits))
+
+    if with_barriers:
+        qc.barrier()
+
+    # Step 4: Add the QFT gates to the circuit
+    for r in range(repetitions):
+        qft(len(enc_num_bits), qc, offset=r * len(enc_num_bits))
+
+    if with_barriers:
+        qc.barrier()
+
+    # Step 5: Add the inverse QFT gates to the circuit
+    for r in range(repetitions):
+        inverse_qft(len(enc_num_bits), qc, offset=r * len(enc_num_bits))
+
+    if with_barriers:
+        qc.barrier()
+
+    # Step 6: Add CNOTs to apply the QFT result qubits on our ancilla qubits
+    for a in range(len(qars)): # For each ancilla qubit register
+        qar = qars[a]
+
+        for offset in range(2):
+            for i in range(qar.size):
+                ancilla_qubit = qar[i]
+                qubit = qrs[i + offset][a]
+
+                qc.cx(control_qubit=qubit, target_qubit=ancilla_qubit)
+
+        if with_barriers:
+            qc.barrier()
+
+    # Step 7: Add measurements for the ancilla qubits
+    for i in range(len(qars)):
+        qar = qars[i]
+        car = cars[i]
+
+        qc.measure(qar, car)
+
+    if with_barriers:
+        qc.barrier()
+
+    # Step 8: Add measurements for the qft results
+    for i in range(len(qrs)):
+        qr = qrs[i]
+        cr = crs[i]
+
+        qc.measure(qr, cr)
+
+    return qc
+\end{python}
+
+\subsection{Decoding result from circuit}
+\label{subsec:appendix-decoding-result-circuit}
+
+\begin{python}
+def decode_result(result_str, error_correction=True):
+    """
+    ### Description ###
+    Decode the passed result string ([result_str]) from the quantum computation in the following form:
+    'ZZ YY XX CCC BBB AAA' where either letter of A, B, C, X, Y and Z can be either 0 or 1.
+
+    ### String parts meanings ###
+    AAA: Measurement result of the a-register
+    BBB: Measurement result of the b-register
+    CCC: Measurement result of the c-register
+    XX: Measurement result of the ancilla bits for the first qubit of the a-, b- and c-registers
+    YY: Measurement result of the ancilla bits for the second qubit of the a-, b- and c-registers
+    ZZ: Measurement result of the ancilla bits for the third qubit of the a-, b-, and c-registers
+
+    ### Ancilla bits meaning (ZZ, YY and XX) ###
+    00: No bit-flip happened
+    01: Bit-flip in register a
+    10: Bit-flip in register c
+    11: Bit-flip in register b
+
+    ### Arguments ###
+    - result_str: The result string to decode
+    - error_correction: Whether to perform error correction
+
+    ### Returns ###
+    The decoded bit representation of the initial number fed into the quantum circuit
+    with error correction using the ancilla bits and repetition already applied.
+
+    ### Example ###
+    Input: '10 01 00 010 110 010'
+
+    ZZ = 10 -> means that the third qubit of register c has suffered from a bit-flip
+    XX = 01 -> means that the second qubit of register a has suffered from a bit-flip
+    YY = 00 -> means not bit flip happened in the first qubit
+
+    Corrected CCC = 110 (previously 010)
+    Corrected BBB = 110 (previously 110)
+    Corrected AAA = 000 (previously 010)
+
+    Result = 110 (Merged CCC, BBB and AAA)
+    """
+
+    # Step 1: Parse result string
+    parts = result_str.split()
+
+    if len(parts) != 6:
+        raise Exception(f'Wrong result string format: Expected 6 strings separated by white spaces. Instead got "{result_str}"')
+
+    ZZ = parts[0]
+    XX = parts[1]
+    YY = parts[2]
+    CCC = parts[3]
+    BBB = parts[4]
+    AAA = parts[5]
+
+    if len(ZZ) != 2 or len(XX) != 2 or len(YY) != 2 or len(CCC) != 3 or len(BBB) != 3 or len(AAA) != 3:
+        raise Exception(f'Wrong result string format: Expected string to have the form "ZZ XX YY CCC BBB AAA" where each letter represents either 0 or 1')
+
+    def to_bit_array(s):
+        l = list(s)
+
+        for i in range(len(l)):
+            ch = l[i]
+
+            if ch != '0' and ch != '1':
+                raise Exception(f'Wrong result string format: Expected string to contain only 0s and 1s (separated by white spaces)')
+
+            l[i] = int(ch)
+
+        return l
+
+
+    ZZ = to_bit_array(ZZ)
+    XX = to_bit_array(XX)
+    YY = to_bit_array(YY)
+    CCC = to_bit_array(CCC)
+    BBB = to_bit_array(BBB)
+    AAA = to_bit_array(AAA)
+
+    # Step 2: Correct bit-flips indicated by the error syndrome (ancilla bits)
+    def correct_bit_flip(err_syndrome, idx, regs):
+        reg_idx = None
+        if err_syndrome[0] == 0:
+            if err_syndrome[1] == 0: # No Bit-flip
+                return
+            else: # Bit-flip in register a
+                reg_idx = 2
+        else:
+            if err_syndrome[1] == 0: # Bit-flip in register c
+                reg_idx = 0
+            else: # Bit-flip in register b
+                reg_idx = 1
+
+        reg = regs[reg_idx]
+        reg[idx] = 0 if reg[idx] == 1 else 1
+
+    if error_correction:
+        correct_bit_flip(ZZ, 0, [CCC, BBB, AAA])
+        correct_bit_flip(XX, 1, [CCC, BBB, AAA])
+        correct_bit_flip(YY, 2, [CCC, BBB, AAA])
+
+    # Step 3: Merge results
+    result = [0] * 3
+
+    for i in range(len(result)):
+        result[i] = 1 if AAA[i] + BBB[i] + CCC[i] >= 2 else 0
+
+    return result
+\end{python}
