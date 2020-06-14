@@ -1,6 +1,7 @@
 \documentclass[num-refs]{wiley-networks}
 
 \usepackage{float}
+\usepackage{pythonhighlight}
 
 \papertype{Paper}
 \paperfield{Quantum software development}
@@ -26,7 +27,10 @@
 
 %    \hrule
 
+    \begingroup
+    \hypersetup{linkcolor=black}
     \tableofcontents
+    \endgroup
 
     \setlength{\parskip}{0.2cm}%
 
@@ -43,9 +47,7 @@
 
     \newpage
 
-    \section*{Appendix}
-    \label{sec:appendix}
-
-    \subsection*{Test}
+    \appendix
+    \include{appendix/qft}
 
 \end{document} 

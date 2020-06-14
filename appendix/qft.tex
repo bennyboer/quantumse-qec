@@ -1,0 +1,117 @@
+\section{QFT circuit with Qiskit}
+\label{sec:qft-circuit-qiskit}
+
+\subsection{Necessary imports}
+\label{subsec:qft-circuit-qiskit-necessary-imports}
+
+\begin{python}
+# Qiskit
+from qiskit import __qiskit_version__
+from qiskit import ClassicalRegister, QuantumRegister, QuantumCircuit
+from qiskit import execute, Aer
+from qiskit import IBMQ
+from qiskit.visualization import plot_histogram
+from qiskit.providers.ibmq import least_busy
+
+# Plotting library
+import matplotlib.pyplot as plt
+
+# Math library
+import numpy as np
+\end{python}
+
+\subsection{Qiskit version}
+\label{subsec:qiskit-version}
+
+The used Qiskit version can be received by calling the following.
+
+\begin{python}
+print(__qiskit_version__)
+
+>>> {'qiskit-terra': '0.14.1',
+'qiskit-aer': '0.5.2',
+'qiskit-ignis': '0.3.0',
+'qiskit-ibmq-provider': '0.7.2',
+'qiskit-aqua': '0.7.1',
+'qiskit': '0.19.3'}
+\end{python}
+
+\subsection{QFT function}
+\label{subsec:qft-function}
+
+\begin{python}
+def qft(n):
+    """
+    Created a quantum Fourier transform on the passed quantum circuit.
+    Pass [n] as the number of qubits the circuit should be able to deal with.
+    """
+
+    qc = QuantumCircuit(n)
+
+    # Create core QFT circuit
+    for i in range(n - 1, -1, -1):
+        # Apply Hadamard gate on the i'th qubit (most significant qubit)
+        qc.h(i)
+
+    # Apply controlled rotation around the Z-axis (CU1-Gate)
+    for j in range(i):
+        angle = np.pi / 2 ** (i - j)
+
+        qc.cu1(theta=angle, control_qubit=j, target_qubit=i)
+
+        qc.barrier() # Barrier for better readability of the resulting circuit graph
+
+    # Add ending swaps
+    for i in range(n // 2):
+        qc.swap(i, n - 1 - i)
+
+    return qc
+\end{python}
+
+\subsection{Inverse QFT function}
+\label{subsec:inverse-qft-function}
+
+\begin{python}
+def inverse_qft(n):
+    """
+    Create a inverse quantum Fourier transform on the passed quantum circuit.
+    Pass [n] as the number of qubits the circuit should be able to deal with.
+    """
+
+    return qft(n).inverse()
+\end{python}
+
+\subsection{Encoding and decoding number in a circuit}
+\label{subsec:encoding-decoding-number-in-circuit}
+
+\begin{python}
+def encode_num(num):
+    """
+    Encode the passed decimal integer number in an quantum circuit.
+    """
+
+    remainders = []
+    while num > 0:
+        remainder = num % 2
+        num = num // 2
+
+        remainders.append(remainder)
+
+    qc = QuantumCircuit(len(remainders))
+
+    for i in range(len(remainders)):
+        if remainders[i] == 1:
+            qc.x(i)
+
+    return qc
+
+
+def decode_num(n):
+    qc = QuantumCircuit(n, n)
+
+    qc.barrier()
+
+    qc.measure(range(n), range(n))
+
+    return qc
+\end{python}

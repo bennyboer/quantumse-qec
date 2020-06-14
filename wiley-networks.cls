@@ -273,6 +273,7 @@
 \appto{\footnotelayout}{\fontsize{10\p@}{13\p@}\selectfont}
 \renewcommand{\footnoterule}{\noindent\textcolor{black!50}{\rule{\textwidth}{0.5\p@}}\vskip2\p@}
 
+\definecolor{slategray}{rgb}{0.439, 0.502, 0.565}
 
 %% Headers
 \RequirePackage{fancyhdr}
@@ -285,7 +286,7 @@
 %   \begingroup
     \fontsize{11\p@}{13\p@}\selectfont%
     \begin{tabularx}{\textwidth}{@{}X >{\centering\arraybackslash}X r | r @{}}%
-        \@runningauthor
+        \textcolor{slategray}{\@runningauthor\space--\space\emph{\today}}
 %            \hline
         \ifdefempty{\@paperreceived}{& & & }{%
             \textit{\@jname}~\@jyear; \@jvolume: \@jpages &
@@ -595,7 +596,7 @@ number = \textsuperscript{#1}
 \usepackage[hidelinks]{hyperref}
 \hypersetup{
 colorlinks=true,
-linkcolor=black,
+linkcolor=[rgb]{0.9, 0.25, 0.45},
 citecolor=[rgb]{0.18,0.54,0.54},
 urlcolor=[rgb]{0.18,0.54,0.54},
 }

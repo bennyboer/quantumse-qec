@@ -11,6 +11,8 @@ Since we are already familiar with the quantum computing software development fr
 Its tight coupling with IBM Quantum Experience and thus accessible quantum devices allow testing quantum circuits in a real environment~\cite{IBMQAccount}.
 Besides that the framework offers a simulator capable of testing the created code as well as adding a noise model to imitate real quantum computer behavior, which we want to fight using our quantum error correction solution~\cite{QiskitNoiseModel}.
 
+The specific \texttt{Qiskit} version used in this paper is listed in the appendix~\ref{subsec:qiskit-version}.
+
 \subsection{Python}
 \label{subsec:python}
 
@@ -30,3 +32,13 @@ It is an open-source project to support interactive data science and scientific 
 One of its components called \emph{Jupyter Notebooks} will be used to quickly write and test Python code with additional support for LaTeX and Markdown to document that code more clearly~\cite{JupyterLabOverview}.
 
 In addition, the code is also included in the annex to this document in order to ease the reproduction of the work of this paper.
+
+\subsection{QFT circuit}
+\label{subsec:qft-circuit}
+
+So far we have not discussed what specific circuit is planned to be implemented.
+The QFT is transforming from the computational basis in the Fourier basis where we store numbers using various rotations around the Z-axis of the individual qubits~\cite{QiskitTBQFT}.
+When measuring the result we would just receive \(0\) or \(1\) with probability \(\frac{1}{2}\) (neglecting noise errors).
+There is the quantum phase estimation algorithm that would estimate that phase, but for the sake of just trying to run error correction we will just transform in the computational basis again using the \emph{inverse} QFT circuit.
+Afterwards we should be able to measure the input again.
+Thus, we can easily validate whether errors happened.
