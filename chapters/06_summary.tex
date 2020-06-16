@@ -1,7 +1,7 @@
 \section{Summary}
 \label{sec:summary}
 
-After having observed some interesting results we want to quickly sum up the contents of the paper followed by a conclusion and some proposals for further studies.
+After having observed some interesting results we want to quickly sum up the contents of the paper followed by some proposals for further studies.
 
 \subsection{Conclusion}
 \label{subsec:conclusion}
@@ -21,8 +21,10 @@ That might be another factor that leads to the observed strong noisy results.
 \subsection{Proposals for further studies}
 \label{subsec:proposals-for-further-studies}
 
-From the conclusion we find several proposals that might be worth studying in the future:
+In summary we find several proposals that might be worth studying in the future:
 
 \begin{itemize}
-    \item Since we rely on \texttt{CNOT} gates it would be interesting to remove them from the circuit and observe what impact that has on the "Only merged results" histogram.
+    \item Since we rely on \texttt{CNOT} gates it would be interesting to remove them from the circuit and afterwards observe what happens to the "Only merged results" histogram.
+    \item Qiskit allows us to directly select and assign specific qubits of a real quantum backend that we want to use.
+    That way we might be able to use only qubits that have low error rates.
 \end{itemize}
