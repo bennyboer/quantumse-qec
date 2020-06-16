@@ -223,7 +223,7 @@ def prepare_rc_qec_qft_circuit(num_to_encode, repetitions=1, with_barriers=True)
 \label{subsec:appendix-decoding-result-circuit}
 
 \begin{python}
-def decode_result(result_str, error_correction=True):
+def decode_result(result_str, error_correction=True, exclude_error_results_during_merge=False):
     """
     ### Description ###
     Decode the passed result string ([result_str]) from the quantum computation in the following form:
@@ -246,6 +246,7 @@ def decode_result(result_str, error_correction=True):
     ### Arguments ###
     - result_str: The result string to decode
     - error_correction: Whether to perform error correction
+    - exclude_error_results_during_merge: Whether to exclude results where errors occurred on during merging
 
     ### Returns ###
     The decoded bit representation of the initial number fed into the quantum circuit
@@ -307,7 +308,7 @@ def decode_result(result_str, error_correction=True):
         reg_idx = None
         if err_syndrome[0] == 0:
             if err_syndrome[1] == 0: # No Bit-flip
-                return
+                return None
             else: # Bit-flip in register a
                 reg_idx = 2
         else:
@@ -319,16 +320,105 @@ def decode_result(result_str, error_correction=True):
         reg = regs[reg_idx]
         reg[idx] = 0 if reg[idx] == 1 else 1
 
+        return idx
+
+    regs = [CCC, BBB, AAA]
+    corrected_reg_indices = []
     if error_correction:
-        correct_bit_flip(ZZ, 0, [CCC, BBB, AAA])
-        correct_bit_flip(XX, 1, [CCC, BBB, AAA])
-        correct_bit_flip(YY, 2, [CCC, BBB, AAA])
+        reg_idx = correct_bit_flip(ZZ, 0, regs)
+        if reg_idx is not None:
+            corrected_reg_indices.append(reg_idx)
+
+        reg_idx = correct_bit_flip(YY, 1, regs)
+        if reg_idx is not None:
+            corrected_reg_indices.append(reg_idx)
+
+        reg_idx = correct_bit_flip(XX, 2, regs)
+        if reg_idx is not None:
+            corrected_reg_indices.append(reg_idx)
 
     # Step 3: Merge results
     result = [0] * 3
 
     for i in range(len(result)):
-        result[i] = 1 if AAA[i] + BBB[i] + CCC[i] >= 2 else 0
+        zeros = 0
+        ones = 0
+        for a in range(len(regs)):
+            reg = regs[a]
+            if not exclude_error_results_during_merge or not a in corrected_reg_indices:
+                if reg[i] == 0:
+                    zeros += 1
+                else:
+                    ones += 1
+
+        result[i] = 1 if ones > zeros else 0
 
     return result
+\end{python}
+
+\subsection{Source code used to generate a histogram of the results}
+\label{subsec:code-histogram-results}
+
+\begin{python}
+def plot_histograms(counts):
+    fig, axes = plt.subplots(2, 2, figsize=(14,8))
+
+    # Plot without performing any error correction
+    result_map = {}
+    for key, value in counts.items():
+        parts = key.split()
+
+        for i in range(3, 6, 1):
+            r = parts[i]
+
+        if r not in result_map:
+            result_map[r] = value
+        else:
+            result_map[r] += value
+
+    plot_histogram(result_map, ax=axes[0][0])
+    axes[0][0].set_title("No error correction", fontsize=20)
+
+    # Plot without performing bit-flip correction but allow merging
+    result_map = {}
+    for key, value in counts.items():
+        r = "".join(map(lambda x: str(x), decode_result(key, error_correction=False)))
+
+        if r not in result_map:
+            result_map[r] = value
+        else:
+            result_map[r] += value
+
+    plot_histogram(result_map, ax=axes[0][1])
+    axes[0][1].set_title("Only merging results", fontsize=20)
+
+    # Plot with error-correction
+    result_map = {}
+    for key, value in counts.items():
+        r = "".join(map(lambda x: str(x), decode_result(key)))
+
+        if r not in result_map:
+            result_map[r] = value
+        else:
+            result_map[r] += value
+
+    plot_histogram(result_map, ax=axes[1][0])
+    axes[1][0].set_title("Error correction", fontsize=20)
+
+    # Plot without allowing bit-flip results to be merged
+    result_map = {}
+    for key, value in counts.items():
+        r = "".join(map(lambda x: str(x), decode_result(key, exclude_error_results_during_merge=True)))
+
+        if r not in result_map:
+            result_map[r] = value
+        else:
+            result_map[r] += value
+
+    plot_histogram(result_map, ax=axes[1][1])
+    axes[1][1].set_title("Only merge results without error", fontsize=20)
+
+    fig.tight_layout(pad=2.5)
+
+    fig.savefig('out/test-histogram-qec-results.pdf', transparent=True)
 \end{python}

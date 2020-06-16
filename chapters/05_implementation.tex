@@ -192,4 +192,64 @@ Additionally, we have introduced the resulting bit string format which we will g
 This section aims at testing a 3 input qubit, 3 repetitions circuit with the encoded number 6 using the simulator as well as real quantum devices.
 In the first step we will use the Simulator with manually chosen and generated noise models, followed by some real quantum backends.
 
+Utilizing the code displayed in appendix~\ref{subsec:code-histogram-results} we are able to generate histograms showing the decoded results for multiple execution shots of the quantum circuit.
+The histograms are plotted on the same result set but with different error correcting techniques applied:
+\begin{itemize}
+    \item \textbf{No error correction}: No error correction is applied on the result set and all the results from the individual QFT circuit repetitions are taken into account.
+    \item \textbf{Only merging results}: The results from the individual QFT circuits are merged, but the ancillary bit result is not taken into account.
+    \item \textbf{Error correction}: The results from the individual QFT circuits are first error corrected using the ancillary bit results and then merged.
+    \item \textbf{Only merge results without error}: Only results from the individual QFT circuits are merged that have not been flagged as wrong by the ancillary bit results.
+\end{itemize}
 
+Figure~\ref{fig:test-histogram-qec-results-noise-model} is visualizing the results when using the simulator with a noise model with both probability values set to \(5 \%\).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{res/test-histogram-qec-results-noise-model.pdf}
+    \caption{Result distributions of 1024 shots of the proposed error correcting circuit.}
+    \label{fig:test-histogram-qec-results-noise-model}
+\end{figure}
+
+The histograms show that the error correction is indeed working by increasing the correct result ratio from \(0.744 \%\) to \(0.835 \%\).
+Interestingly only merging the results without error correction seems to work even better.
+
+When generating a noise model using Qiskit from the backend \texttt{ibmq\_16\_melbourne} we get the results from figure~\ref{fig:test-histogram-qec-results-noise-model-generated}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{res/test-histogram-qec-results-noise-model-generated.pdf}
+    \caption{Result distributions of 1024 shots of the proposed error correcting circuit using a generated noise model from the backend \texttt{ibmq\_16\_melbourne}.}
+    \label{fig:test-histogram-qec-results-noise-model-generated}
+\end{figure}
+
+Again the results show an improvement when using error correction but with less difference between the "Error correction" and "Only merging results" plots compared to the manually configured noise model.
+
+Running on the real quantum backend \texttt{ibmq\_16\_melbourne} we get the results displayed in the below plots of figure~\ref{fig:test-histogram-qec-results-noise-model-melbourne}.
+Unfortunately that backend seems to be too noisy and results in mostly random results.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{res/test-histogram-qec-results-melbourne.pdf}
+    \caption{Result distributions of 1024 shots of the proposed error correcting circuit using the backend \texttt{ibmq\_16\_melbourne}.}
+    \label{fig:test-histogram-qec-results-noise-model-melbourne}
+\end{figure}
+
+Additionally the circuit has been executed on two more sophisticated quantum devices "Paris" (27 qubits) and "Johannesburg" (20 qubits) leading to the results displayed in figure~\ref{fig:test-histogram-qec-results-paris} and~\ref{fig:test-histogram-qec-results-johannesburg}~\cite{IBMQAvailableSystems}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{res/test-histogram-qec-results-paris.pdf}
+    \caption{Result distributions of the proposed error correcting circuit using the backend "Paris" with 27 qubits.}
+    \label{fig:test-histogram-qec-results-paris}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{res/test-histogram-qec-results-johannesburg.pdf}
+    \caption{Result distributions of the proposed error correcting circuit using the backend "Johannesburg" with 20 qubits.}
+    \label{fig:test-histogram-qec-results-johannesburg}
+\end{figure}
+
+While there is still a lot of noise observable - at least for the proposed circuit - we can definitely see that error correction is working.
+Especially on "Paris" where "Only merging results" provides a jump from \(0.276 \%\) to \(0.353 \%\).
+"Paris" is also the only one of the tested real quantum backends where "Error corrections" does show an improvement compared to "No error correction".

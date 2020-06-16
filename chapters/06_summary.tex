@@ -1,8 +1,28 @@
 \section{Summary}
 \label{sec:summary}
 
+After having observed some interesting results we want to quickly sum up the contents of the paper followed by a conclusion and some proposals for further studies.
+
 \subsection{Conclusion}
 \label{subsec:conclusion}
 
+We have been implementing a quantum circuit trying to error correct bit-flips over several repeated QFT circuits using the Framework Qiskit.
+While the Qiskit simulator showed good results when manually as well as automatically configured from a given backend, current IBMQ backends seem to be still too noisy for the proposed circuit.
+Additionally we are able to say that the generated noise model from Qiskit is not estimating properly - at least for the proposed circuit.
+
+\citeA[p. 1]{tannu2018case} state that we are currently dealing with \emph{Noisy Intermediate Scale Quantum computers} that do not have the capacity to utilize QEC due to the limited amount of qubits available.
+That said we could experience a little improvement with the "Paris" backend although we were only correcting bit-flip errors.
+They are correct as having proper QEC codes requires a tremendous bigger amount of qubits than we have available today.
+
+Additionally, \citeA[p. 3]{tannu2018case} write that the overall error rate is usually dominated by the gate errors from which we have a lot in the proposed circuit.
+Especially the \texttt{CNOT} gate seems to have high error rates which we utilize extensively in the circuit to "read" the current qubit state to the ancillary qubits~\cite[p. 3]{tannu2018case}.
+That might be another factor that leads to the observed strong noisy results.
+
 \subsection{Proposals for further studies}
 \label{subsec:proposals-for-further-studies}
+
+From the conclusion we find several proposals that might be worth studying in the future:
+
+\begin{itemize}
+    \item Since we rely on \texttt{CNOT} gates it would be interesting to remove them from the circuit and observe what impact that has on the "Only merged results" histogram.
+\end{itemize}
