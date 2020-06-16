@@ -127,6 +127,16 @@ Additionally those functions are used in another function \texttt{prepare\_rc\_q
 It is building the whole circuit for a specified input number and repetition count.
 An example for 2 input qubits and 3 repetitions is displayed in figure~\ref{fig:example-error-correction-circuit} but it really can be any size.
 As one can see we need 4 ancillary qubits for correcting bit flips at the end.
+For 3 input qubits and 3 repetitions it would be 6 ancillary qubits.
+Thus we conclude a formula for determining the needed ancillary qubit count \(c_{ancilla}\) for a given input qubit size \(c_{qubits}\) and repetitions \(c_{rep}\):
+
+\[
+    c_{ancilla}(c_{qubits}, c_{rep}) = (c_{rep} - 1) * c_{qubits}
+\]
+
+The ancilla qubits are needed per qubit in the QFT circuit.
+Since we repeat the QFT circuit multiple times we need more ancilla qubits.
+For 3 input qubits and 3 repetitions we need two ancilla qubits per qubit in a single QFT circuit suming up to 6 since they compare for example all three first qubits of all repetitions as seen in figure~\ref{fig:ancillary-qubit-count}.
 
 \begin{figure}
     \centering
@@ -135,7 +145,51 @@ As one can see we need 4 ancillary qubits for correcting bit flips at the end.
     \label{fig:example-error-correction-circuit}
 \end{figure}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{res/highlighted-qubits.png}
+    \caption{Snippet from the error correcting circuit with 3 input qubits and 3 repetitions. The first qubits of every repetition that are essentially duplicates are highlighted. For those we introduce ancillary qubits in order to compare them at the end.}
+    \label{fig:ancillary-qubit-count}
+\end{figure}
+
 The last code snipped can be looked up in appendix~\ref{subsec:appendix-decoding-result-circuit} and is decoding a resulting bit string from the circuit.
 That means correcting the error when the ancillary bits indicate one.
+As an example we decode the possible result string \texttt{10 01 00 010 110 010}.
+The first three bit strings \texttt{10}, \texttt{01} and \texttt{00} are the measured results from the ancillary qubits.
+Those indicate whether an error happened.
+The concrete meaning is summarized in the following table.
+
+\begin{center}
+    \begin{tabular}{ r c l }
+        \texttt{00} & \(\Rightarrow\) & No error happened \\
+        \texttt{01} & \(\Rightarrow\) & Error happened in the first QFT register (Qubit \(a_0, a_1 or a_2\)) \\
+        \texttt{10} & \(\Rightarrow\) & Error happened in the last QFT register (Qubit \(c_0, c_1 or c_2\)) \\
+        \texttt{11} & \(\Rightarrow\) & Error happened in the middle QFT register (Qubit \(b_0, b_1 or b_2\))
+    \end{tabular}
+\end{center}
+
+Additionally to that, the position of the ancillary bit strings indicate the exact qubit the error occurred on.
+So in the example the error \texttt{10} occurred on the third, \texttt{01} on the second and \texttt{00} (No error) on the first qubit of the specified register.
+
+\begin{center}
+    \begin{tabular}{ r c l }
+        \texttt{10} & \(\Rightarrow\) & Error at \(c_2\) \\
+        \texttt{01} & \(\Rightarrow\) & Error at \(a_1\) \\
+        \texttt{00} & \(\Rightarrow\) & No error at \(a_0, b_0 or c_0\) \\
+    \end{tabular}
+\end{center}
+
+Since we are trying to correct bit-flips we can just flip the resulting bits in the remaining 3 QFT result strings \texttt{010} (Register \(c\)), \texttt{110} (Register \(b\)) and \texttt{010} (Register \(a\)).
+According to the ancillary qubits we have to flip \(c_2\) and \(a_1\) which results in the three corrected strings \texttt{110} (Register \(c\)), \texttt{110} (Register \(b\)) and \texttt{000} (Register \(a\)).
+When merging that three strings we get \texttt{110} as \textbf{decoded} result.
+In summary that is exactly what the decoding function does.
 
 \paragraph{Testing}
+
+As quick reminder: We now have functions to generate a error correcting circuit via repetition of the initial QFT circuit we proposed.
+Additionally, we have introduced the resulting bit string format which we will get from the Qiskit simulator as well as the real quantum backends.
+
+This section aims at testing a 3 input qubit, 3 repetitions circuit with the encoded number 6 using the simulator as well as real quantum devices.
+In the first step we will use the Simulator with manually chosen and generated noise models, followed by some real quantum backends.
+
+
