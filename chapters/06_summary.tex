@@ -7,8 +7,8 @@ After having observed some interesting results we want to quickly sum up the con
 \label{subsec:conclusion}
 
 We have been implementing a quantum circuit trying to error correct bit-flips over several repeated QFT circuits using the Framework Qiskit.
-While the Qiskit simulator showed good results when manually as well as automatically configured from a given backend, current IBMQ backends seem to be still too noisy for the proposed circuit.
-Additionally we are able to say that the generated noise model from Qiskit is not estimating properly - at least for the proposed circuit.
+While the Qiskit simulator showed good results for manual as well as automatically configured noise models, current IBMQ backends seem to be still too noisy for the proposed circuit.
+Additionally, we are able to say that the generated noise model from Qiskit is not estimating properly - at least for the proposed circuit.
 
 \citeA[p. 1]{tannu2018case} state that we are currently dealing with \emph{Noisy Intermediate Scale Quantum computers} that do not have the capacity to utilize QEC due to the limited amount of qubits available.
 That said we could experience a little improvement with the "Paris" backend although we were only correcting bit-flip errors.
